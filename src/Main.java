@@ -65,13 +65,78 @@ class Segment {
     }
 }
 
-class Node {
-    int key;
-    int height;
+class Node<T> {
+    int value;
     Node left;
     Node right;
 
-    Node(int key){
-        this.key = key;
+    Node(int value){
+        this.value = value;
     }
+
+    Node<T> copy(){
+        Node ans = new Node(this.value);
+        ans.left = this.left;
+        ans.right = right;
+        return ans;
+    }
+
+    int height(){
+        if (this.left == null && this.right == null){
+            return 1;
+        }
+        else if (this.left == null){
+            return this.right.height() + 1;
+        }
+        else if (this.right == null){
+            return this.left.height() + 1;
+        }
+
+        return Math.max(this.left.height() + 1, this.right.height() + 1);
+    }
+}
+
+class AVLTree<T>{
+
+    public int getBalance(Node<T> root) {
+        return (root == null) ? 0 : root.right.height() - root.left.height();
+    }
+
+    public void rightRotate(Node<T> root){
+        Node<T> tempRoot = root.copy();
+        root = root.left;
+
+        tempRoot.left = root.right;
+        root.right = tempRoot;
+    }
+
+    public void leftRotate(Node<T> root){
+        Node<T> tempRoot = root.copy();
+        root = root.right;
+
+        tempRoot.right = root.left;
+        root.left = tempRoot;
+    }
+
+    public void rebalance(Node root){
+        int balance = getBalance(root);
+
+        if (balance > 1) {
+            if ((root.right.right.height()) > (root.right.left.height())) {
+                leftRotate(root);
+            } else {
+                rightRotate(root.right);
+                leftRotate(root);
+            }
+        } else if (balance < -1) {
+            if ((root.left.left.height()) > (root.left.right.height()))
+                rightRotate(root);
+            else {
+                leftRotate(root.left);
+                rightRotate(root);
+            }
+        }
+    }
+
+
 }
