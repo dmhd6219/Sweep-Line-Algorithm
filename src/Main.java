@@ -37,19 +37,22 @@ public class Main {
 
                 if (Segment.intersect(point.getSegment(), tree.getPredecessor(point.getSegment()))) {
                     System.out.println("INTERSECTION");
-                    System.out.printf("%s %s\n", point.getSegment(), tree.getPredecessor(point.getSegment()));
+                    System.out.printf("%s\n%s\n", point.getSegment(), tree.getPredecessor(point.getSegment()));
                     System.exit(0);
                 }
-                if (Segment.intersect(point.getSegment(), tree.getSuccessor(point.getSegment()))) {
+                if (Segment.intersect(
+                        point.getSegment(),
+                        tree.getSuccessor(
+                                point.getSegment()))) {
                     System.out.println("INTERSECTION");
-                    System.out.printf("%s %s\n", point.getSegment(), tree.getSuccessor(point.getSegment()));
+                    System.out.printf("%s\n%s\n", point.getSegment(), tree.getSuccessor(point.getSegment()));
                     System.exit(0);
                 }
             } else {
                 if (Segment.intersect(tree.getPredecessor(point.getSegment()),
                         tree.getSuccessor(point.getSegment()))) {
                     System.out.println("INTERSECTION");
-                    System.out.printf("%s %s\n", point.getSegment(), tree.getSuccessor(point.getSegment()));
+                    System.out.printf("%s\n%s\n", point.getSegment(), tree.getSuccessor(point.getSegment()));
                     System.exit(0);
                 }
                 tree.delete(tree.root, point.getSegment());
@@ -139,7 +142,6 @@ class Segment implements Comparable<Segment> {
     }
 
     public static boolean intersect(Segment s1, Segment s2) {
-        System.out.println("a");
         if (s1 == null || s2 == null) {
             return false;
         }
@@ -192,7 +194,7 @@ class Segment implements Comparable<Segment> {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return String.format("%s %s", p, q);
     }
 }
@@ -333,26 +335,23 @@ class AVLTree<T extends Comparable<T>> {
         return rootNode;
     }
 
-    public T getSuccessor(T value) {
-        Node<T> node = root;
-        Node<T> successor = null;
+    T getSuccessor(T value) {
+        Node<T> current = root;
+        T successor = null;
 
-        while (node != null) {
-            if (node.data.compareTo(value) > 0) {
-                successor = node;
-                node = node.left;
-
-            } else if (node.data.compareTo(value) < 0) {
-                node = node.right;
-
-            } else {
-                if (node.right != null) {
-                    successor = findMin(node.right);
+        while (current != null) {
+            if (value.compareTo(current.data) <= 0) {
+                if (current.left != null && current.left.data == value) {
+                    successor = current.data;
+                } else if (current.data == value && current.right != null) {
+                    successor = current.right.data;
                 }
+                current = current.left;
+            } else {
+                current = current.right;
             }
         }
-
-        return successor == null ? null : successor.data;
+        return successor;
     }
 
     public T getPredecessor(T elem) {
