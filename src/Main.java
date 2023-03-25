@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -65,30 +66,28 @@ class Segment {
     }
 }
 
-class Node<T> {
-    int value;
+class Node<T extends Comparable<T>> {
+    T value;
     Node left;
     Node right;
 
-    Node(int value){
+    Node(T value) {
         this.value = value;
     }
 
-    Node<T> copy(){
+    Node<T> copy() {
         Node ans = new Node(this.value);
         ans.left = this.left;
         ans.right = right;
         return ans;
     }
 
-    int height(){
-        if (this.left == null && this.right == null){
+    int height() {
+        if (this.left == null && this.right == null) {
             return 1;
-        }
-        else if (this.left == null){
+        } else if (this.left == null) {
             return this.right.height() + 1;
-        }
-        else if (this.right == null){
+        } else if (this.right == null) {
             return this.left.height() + 1;
         }
 
@@ -96,13 +95,14 @@ class Node<T> {
     }
 }
 
-class AVLTree<T>{
+class AVLTree<T extends Comparable<T>> {
+    Node<T> root;
 
     public int getBalance(Node<T> root) {
         return (root == null) ? 0 : root.right.height() - root.left.height();
     }
 
-    public void rightRotate(Node<T> root){
+    public void rightRotate(Node<T> root) {
         Node<T> tempRoot = root.copy();
         root = root.left;
 
@@ -110,7 +110,7 @@ class AVLTree<T>{
         root.right = tempRoot;
     }
 
-    public void leftRotate(Node<T> root){
+    public void leftRotate(Node<T> root) {
         Node<T> tempRoot = root.copy();
         root = root.right;
 
@@ -118,7 +118,7 @@ class AVLTree<T>{
         root.left = tempRoot;
     }
 
-    public void rebalance(Node root){
+    public void rebalance(Node root) {
         int balance = getBalance(root);
 
         if (balance > 1) {
@@ -136,6 +136,64 @@ class AVLTree<T>{
                 rightRotate(root);
             }
         }
+    }
+
+    public void insert(Node<T> root, T value) {
+        if (value == null) {
+            throw new RuntimeException("Null value");
+        }
+
+        if (value.compareTo(root.value) < 1) {
+            if (root.left == null) {
+                root.left = new Node(value);
+            }
+            else {
+                insert(root.left, value);
+            }
+
+        } else {
+            if (root.right == null) {
+                root.right = new Node(value);
+            }
+            else {
+                insert(root.right, value);
+            }
+        }
+
+    }
+
+    Node<T> find(Node<T> root, T value){
+        if (value == null) {
+            throw new RuntimeException("Null value");
+        }
+
+        if (value.compareTo(root.value) < 1) {
+            if (root.left == null) {
+                return null;
+            }
+            else {
+                if (root.value == value){
+                    return root;
+                }
+                else {
+                    find(root.left, value);
+                }
+            }
+
+        } else {
+            if (root.right == null) {
+                return null;
+            }
+            else {
+                if (root.value == value){
+                    return root;
+                }
+                else {
+                    find(root.right, value);
+                }
+            }
+        }
+        return null;
     }
 
 
