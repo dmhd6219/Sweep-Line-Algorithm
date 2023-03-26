@@ -12,9 +12,9 @@ public class Main {
         BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
         int n = Integer.parseInt(bf.readLine());
 
-        ArrayList<Point> points = new ArrayList<>();
+        Point[] points = new Point[n * 2];
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n * 2; i+=2) {
             int[] nums = Arrays.stream(bf.readLine().split(" ")).mapToInt(x -> Integer.parseInt(x)).toArray();
             Point p = new Point(nums[0], nums[1], true);
             Point q = new Point(nums[2], nums[3]);
@@ -23,13 +23,15 @@ public class Main {
             p.setSegment(s);
             q.setSegment(s);
 
-            points.add(p);
-            points.add(q);
+            points[i] = p;
+            points[i + 1] = q;
 
         }
 
+        mergeSort(points, n * 2);
 
-        points.sort(new PointComparator());
+
+
 
         for (Point point : points) {
             if (point.isLeft()) {
@@ -62,17 +64,52 @@ public class Main {
         System.out.println("NO INTERSECTIONS");
 
     }
-}
 
-class PointComparator implements Comparator<Point> {
+    public static void mergeSort(Point[] a, int n) {
+        if (n < 2) {
+            return;
+        }
+        int mid = n / 2;
+        Point[] l = new Point[mid];
+        Point[] r = new Point[n - mid];
 
-    @Override
-    public int compare(Point o1, Point o2) {
-        return o1.getX() > o2.getX() ? -1 : o1.getX() == o2.getX() ? 0 : 1;
+        for (int i = 0; i < mid; i++) {
+            l[i] = a[i];
+        }
+        for (int i = mid; i < n; i++) {
+            r[i - mid] = a[i];
+        }
+        mergeSort(l, mid);
+        mergeSort(r, n - mid);
+
+        merge(a, l, r, mid, n - mid);
     }
+
+    public static void merge(
+            Point[] a, Point[] l, Point[] r, int left, int right) {
+
+        int i = 0, j = 0, k = 0;
+        while (i < left && j < right) {
+            if (l[i].compareTo(r[j]) > 0) {
+                a[k++] = l[i++];
+            }
+            else {
+                a[k++] = r[j++];
+            }
+        }
+        while (i < left) {
+            a[k++] = l[i++];
+        }
+        while (j < right) {
+            a[k++] = r[j++];
+        }
+    }
+
 }
 
-class Point {
+
+
+class Point  implements Comparable<Point>{
     private int x;
     private int y;
     private boolean left = false;
@@ -112,6 +149,11 @@ class Point {
 
     public boolean isLeft() {
         return left;
+    }
+
+    @Override
+    public int compareTo(Point o) {
+        return getX() > o.getX() ? 1 : getX() == o.getX() ? 0 : -1;
     }
 }
 
@@ -162,6 +204,10 @@ class Segment implements Comparable<Segment> {
 
         int denominator = ((s1.getP().getX() - s1.getQ().getX()) * (s2.getP().getY() - s2.getQ().getY()) -
                 (s1.getP().getY() - s1.getQ().getY()) * (s2.getP().getX() - s2.getQ().getX()));
+
+        if (denominator == 0){
+            return false;
+        }
 
 
         int x = ((s1.getP().getX() * s1.getQ().getY() - s1.getP().getY() * s1.getQ().getX()) * (s2.getP().getX() -
@@ -354,20 +400,20 @@ class AVLTree<T extends Comparable<T>> {
         return successor;
     }
 
-    public T getPredecessor(T elem) {
-        Node<T> node = root;
-        Node<T> predecessor = null;
+    T getPredecessor(T value) {
+        Node<T> current = root;
+        T predecessor = null;
 
-        while (node != null) {
-            if (elem.compareTo(node.data) <= 0) {
-                node = node.left;
-            } else {
-                predecessor = node;
-                node = node.right;
+        while (current != null) {
+            predecessor = current.data;
+            if (value.compareTo(current.data) <= 0) {
+                current = current.left;
+            }
+            else {
+                current = current.right;
             }
         }
-        return predecessor == null ? null : predecessor.data;
-
+        return predecessor;
     }
 
     private Node<T> findMin(Node<T> node) {
