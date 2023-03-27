@@ -1,21 +1,19 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        AVLTree<Segment> tree = new AVLTree<>();
+        RedBlackTree<Segment> tree = new RedBlackTree<>();
 
         BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
         int n = Integer.parseInt(bf.readLine());
 
         Point[] points = new Point[n * 2];
 
-        for (int i = 0; i < n * 2; i+=2) {
+        for (int i = 0; i < n * 2; i += 2) {
             long[] nums = Arrays.stream(bf.readLine().split(" ")).mapToLong(x -> Long.parseLong(x)).toArray();
             Point p = new Point(nums[0], nums[1], true);
             Point q = new Point(nums[2], nums[3]);
@@ -30,8 +28,6 @@ public class Main {
         }
 
         quickSort(points, 0, n * 2 - 1);
-
-
 
 
         for (Point point : points) {
@@ -55,10 +51,10 @@ public class Main {
                 if (Segment.intersect(tree.getPredecessor(point.getSegment()),
                         tree.getSuccessor(point.getSegment()))) {
                     System.out.println("INTERSECTION");
-                    System.out.printf("%s\n%s\n", point.getSegment(), tree.getSuccessor(point.getSegment()));
+                    System.out.printf("%s\n%s\n", tree.getPredecessor(point.getSegment()), tree.getSuccessor(point.getSegment()));
                     System.exit(0);
                 }
-                tree.delete(tree.root, point.getSegment());
+                tree.delete(point.getSegment());
             }
         }
 
@@ -70,14 +66,14 @@ public class Main {
         if (begin < end) {
             int partitionIndex = partition(arr, begin, end);
 
-            quickSort(arr, begin, partitionIndex-1);
-            quickSort(arr, partitionIndex+1, end);
+            quickSort(arr, begin, partitionIndex - 1);
+            quickSort(arr, partitionIndex + 1, end);
         }
     }
 
     private static int partition(Point arr[], int begin, int end) {
         Point pivot = arr[end];
-        int i = (begin-1);
+        int i = (begin - 1);
 
         for (int j = begin; j < end; j++) {
             if (arr[j].compareTo(pivot) > 0) {
@@ -89,18 +85,17 @@ public class Main {
             }
         }
 
-        Point swapTemp = arr[i+1];
-        arr[i+1] = arr[end];
+        Point swapTemp = arr[i + 1];
+        arr[i + 1] = arr[end];
         arr[end] = swapTemp;
 
-        return i+1;
+        return i + 1;
     }
 
 }
 
 
-
-class Point  implements Comparable<Point>{
+class Point implements Comparable<Point> {
     private long x;
     private long y;
     private boolean left = false;
@@ -196,7 +191,7 @@ class Segment implements Comparable<Segment> {
         long denominator = ((s1.getP().getX() - s1.getQ().getX()) * (s2.getP().getY() - s2.getQ().getY()) -
                 (s1.getP().getY() - s1.getQ().getY()) * (s2.getP().getX() - s2.getQ().getX()));
 
-        if (denominator == 0){
+        if (denominator == 0) {
             return false;
         }
 
@@ -237,186 +232,224 @@ class Segment implements Comparable<Segment> {
     }
 }
 
+enum Orientations {
+    COLLINEAR, CLOCKWISE, COUNTERCLOCKWISE;
+}
+
+enum Colors {
+    RED, BLACK;
+
+    public static Colors getOpposite(Colors color) {
+        return color == RED ? BLACK : RED;
+    }
+
+
+}
+
 class Node<T extends Comparable<T>> {
-    T data;
-    Node<T> left;
-    Node<T> right;
+    T value;
+    Node left, right;
+    Colors color;
 
-    int height;
-
-    public Node(T data) {
-        this.data = data;
+    public Node(T value) {
+        this.value = value;
+        this.color = Colors.RED;
     }
 }
 
-class AVLTree<T extends Comparable<T>> {
-    Node<T> root;
+class RedBlackTree<T extends Comparable<T>> {
+    private Node<T> root;
 
-    private int height(Node<T> node) {
+
+    public void insert(T value) {
+        root = insert(root, value);
+        root.color = Colors.BLACK;
+    }
+
+    private Node<T> insert(Node<T> node, T value) {
         if (node == null) {
-            return 0;
+            return new Node(value);
         }
-        if (node.left == null && node.right == null) {
-            return 1;
-        } else if (node.left == null) {
-            return height(node.right) + 1;
-        } else if (node.right == null) {
-            return height(node.left) + 1;
-        }
-
-        return Math.max(height(node.right) + 1, height(node.left) + 1);
-    }
-
-
-    private int balanceFactor(Node node) {
-        return height(node.right) - height(node.left);
-    }
-
-    private Node<T> rotateRight(Node<T> node) {
-        Node<T> leftChild = node.left;
-
-        node.left = leftChild.right;
-        leftChild.right = node;
-
-        return leftChild;
-    }
-
-    private Node<T> rotateLeft(Node<T> node) {
-        Node<T> rightChild = node.right;
-
-        node.right = rightChild.left;
-        rightChild.left = node;
-
-        return rightChild;
-    }
-
-
-    private Node<T> rebalance(Node<T> node) {
-        int balanceFactor = balanceFactor(node);
-
-        if (balanceFactor < -1) {
-            if (balanceFactor(node.left) <= 0) {
-            } else {
-                node.left = rotateLeft(node.left);
-            }
-            node = rotateRight(node);
+        if (value.compareTo(node.value) < 0) {
+            node.left = insert(node.left, value);
+        } else if (value.compareTo(node.value) > 0) {
+            node.right = insert(node.right, value);
+        } else {
+            node.value = value;
         }
 
-        if (balanceFactor > 1) {
-            if (balanceFactor(node.right) < 0) {
-                node.right = rotateRight(node.right);
-            }
-            node = rotateLeft(node);
+        if (isRed(node.right) && !isRed(node.left)) {
+            return rotateLeft(node);
+        }
+        if (isRed(node.left) && isRed(node.left.left)) {
+            return rotateRight(node);
+        }
+        if (isRed(node.left) && isRed(node.right)) {
+            flipColors(node);
+            return node;
         }
 
         return node;
     }
 
-    Node insert(Node<T> rootNode, T value) {
-        if (rootNode == null) {
-            rootNode = new Node<>(value);
-            return rootNode;
+    private boolean isRed(Node node) {
+        if (node == null) {
+            return false;
         }
-
-        if (value.compareTo(rootNode.data) < 0) {
-            rootNode.left = insert(rootNode.left, value);
-        } else {
-            rootNode.right = insert(rootNode.right, value);
-        }
-
-
-        rootNode = rebalance(rootNode);
-
-        return rootNode;
+        return node.color == Colors.RED;
     }
 
-    Node insert(T value) {
-        Node<T> rootNode = this.root;
-        if (rootNode == null) {
-            rootNode = new Node<>(value);
-            this.root = rootNode;
-            return rootNode;
-        }
-
-        if (value.compareTo(rootNode.data) < 0) {
-            rootNode.left = insert(rootNode.left, value);
-        } else {
-            rootNode.right = insert(rootNode.right, value);
-        }
-
-
-        this.root = rebalance(rootNode);
-
-        return rootNode;
+    private Node<T> rotateLeft(Node node) {
+        Node x = node.right;
+        node.right = x.left;
+        x.left = node;
+        x.color = node.color;
+        node.color = Colors.RED;
+        return x;
     }
 
-    Node delete(Node<T> rootNode, T value) {
-        if (rootNode == null) {
+    private Node<T> rotateRight(Node node) {
+        Node x = node.left;
+        node.left = x.right;
+        x.right = node;
+        x.color = node.color;
+        node.color = Colors.RED;
+        return x;
+    }
+
+    private Node<T> flipColors(Node node) {
+        node.color = Colors.getOpposite(node.color);
+        node.left.color = Colors.getOpposite(node.left.color);
+        node.right.color = Colors.getOpposite(node.right.color);
+        return node;
+    }
+
+    public void delete(T value) {
+        if (root == null) {
+            return;
+        }
+
+        root = delete(root, value);
+        if (root != null) {
+            root.color = Colors.BLACK;
+        }
+    }
+
+    private Node<T> delete(Node<T> node, T value) {
+        if (value.compareTo(node.value) < 0) {
+            if (node.left != null) {
+                if (!isRed(node.left) && !isRed(node.left.left)) {
+                    node = moveRedLeft(node);
+                }
+                node.left = delete(node.left, value);
+            }
+        } else {
+            if (isRed(node.left)) {
+                node = rotateRight(node);
+            }
+            if (value.compareTo(node.value) == 0 && node.right == null) {
+                return null;
+            }
+            if (node.right != null) {
+                if (!isRed(node.right) && !isRed(node.right.left)) {
+                    node = moveRedRight(node);
+                }
+                if (value.compareTo(node.value) == 0) {
+                    Node<T> minNode = findMin(node.right);
+                    node.value = minNode.value;
+                    node.right = deleteMin(node.right);
+                } else {
+                    node.right = delete(node.right, value);
+                }
+            }
+        }
+        return fixUp(node);
+    }
+
+    private Node<T> moveRedLeft(Node node) {
+        flipColors(node);
+        if (isRed(node.right.left)) {
+            node.right = rotateRight(node.right);
+            node = rotateLeft(node);
+            flipColors(node);
+        }
+        return node;
+    }
+
+    private Node<T> deleteMin(Node node) {
+        if (node.left == null) {
             return null;
         }
-        if (rootNode.data.compareTo(value) > 0) {
-            rootNode.left = delete(rootNode.left, value);
-        } else if (rootNode.data.compareTo(value) < 0) {
-            rootNode.right = delete(rootNode.right, value);
-        } else {
-            if (rootNode.left == null || rootNode.right == null) {
-                rootNode = (rootNode.left == null) ? rootNode.right : rootNode.left;
-            } else {
-                Node<T> mostLeftChild = findMin(rootNode.right);
-                rootNode.data = mostLeftChild.data;
-                rootNode.right = delete(rootNode.right, rootNode.data);
-            }
+        if (!isRed(node.left) && !isRed(node.left.left)) {
+            node = moveRedLeft(node);
         }
-        if (rootNode != null) {
-            rootNode = rebalance(rootNode);
-        }
-        return rootNode;
+        node.left = deleteMin(node.left);
+        return fixUp(node);
     }
 
-    T getSuccessor(T value) {
-        Node<T> current = root;
-        T successor = null;
-
-        while (current != null) {
-            if (value.compareTo(current.data) <= 0) {
-                if (current.left != null && current.left.data == value) {
-                    successor = current.data;
-                } else if (current.data == value && current.right != null) {
-                    successor = current.right.data;
-                }
-                current = current.left;
-            } else {
-                current = current.right;
-            }
+    private Node<T> moveRedRight(Node node) {
+        flipColors(node);
+        if (isRed(node.left.left)) {
+            node = rotateRight(node);
+            flipColors(node);
         }
-        return successor;
+        return node;
     }
 
-    T getPredecessor(T value) {
-        Node<T> current = root;
-        T predecessor = null;
-
-        while (current != null) {
-            predecessor = current.data;
-            if (value.compareTo(current.data) <= 0) {
-                current = current.left;
-            }
-            else {
-                current = current.right;
-            }
-        }
-        return predecessor;
-    }
-
-    private Node<T> findMin(Node<T> node) {
+    private Node<T> findMin(Node node) {
         while (node.left != null) {
             node = node.left;
         }
         return node;
     }
 
-}
+    private Node<T> fixUp(Node node) {
+        if (isRed(node.right)) {
+            node = rotateLeft(node);
+        }
+        if (isRed(node.left) && isRed(node.left.left)) {
+            node = rotateRight(node);
+        }
+        if (isRed(node.left) && isRed(node.right)) {
+            flipColors(node);
+        }
+        return node;
+    }
 
-enum Orientations {
-    COLLINEAR, CLOCKWISE, COUNTERCLOCKWISE;
+    public T getPredecessor(T elem) {
+        Node<T> x = root;
+        Node<T> getPredecessor = null;
+        while (x != null) {
+            if (elem.compareTo(x.value) <= 0) {
+                x = x.left;
+            } else {
+                getPredecessor = x;
+                x = x.right;
+            }
+        }
+        if (getPredecessor == null) {
+            return null;
+        } else {
+            return getPredecessor.value;
+        }
+    }
+
+    public T getSuccessor(T elem) {
+        Node<T> Node = root;
+        Node<T> getSuccessor = null;
+        while (Node != null) {
+            if (Node.value.compareTo(elem) > 0) {
+                getSuccessor = Node;
+                Node = Node.left;
+            } else if (Node.value.compareTo(elem) < 0) {
+                Node = Node.right;
+            } else {
+                if (Node.right != null) {
+                    getSuccessor = findMin(Node.right);
+                }
+                break;
+            }
+        }
+        return getSuccessor == null ? null : getSuccessor.value;
+    }
 }
