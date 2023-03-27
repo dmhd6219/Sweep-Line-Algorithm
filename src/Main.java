@@ -226,33 +226,33 @@ class RedBlackTree<T extends Comparable<T>> {
         root.color = Colors.BLACK;
     }
 
-    private Node<T> insert(Node<T> node, T value) {
-        if (node == null) {
+    private Node<T> insert(Node<T> root, T value) {
+        if (root == null) {
             return new Node<>(value);
         }
-        if (value.compareTo(node.value) < 0) {
-            node.left = insert(node.left, value);
+        if (value.compareTo(root.value) < 0) {
+            root.left = insert(root.left, value);
         }
 
-        if (value.compareTo(node.value) > 0) {
-            node.right = insert(node.right, value);
+        if (value.compareTo(root.value) > 0) {
+            root.right = insert(root.right, value);
         }
 
-        if (value.compareTo(node.value) == 0) {
-            node.value = value;
+        if (value.compareTo(root.value) == 0) {
+            root.value = value;
         }
 
-        if (isRed(node.right) && isBlack(node.left)) {
-            node = leftRotation(node);
+        if (isRed(root.right) && isBlack(root.left)) {
+            root = leftRotation(root);
         }
-        if (isRed(node.left) && isRed(node.left.left)) {
-            node = rightRotation(node);
+        if (isRed(root.left) && isRed(root.left.left)) {
+            root = rightRotation(root);
         }
-        if (isRed(node.left) && isRed(node.right)) {
-            node.changeColor();
+        if (isRed(root.left) && isRed(root.right)) {
+            root.changeColor();
         }
 
-        return node;
+        return root;
     }
 
     private boolean isRed(Node<T> node) {
@@ -266,12 +266,6 @@ class RedBlackTree<T extends Comparable<T>> {
         return !isRed(node);
     }
 
-    private Node<T> findMinimum(Node<T> node) {
-        while (node.left != null) {
-            node = node.left;
-        }
-        return node;
-    }
 
     private Node<T> leftRotation(Node<T> root) {
         Node<T> node = root.right;
@@ -305,38 +299,55 @@ class RedBlackTree<T extends Comparable<T>> {
         }
     }
 
-    private Node<T> deleteNode(Node<T> node, T value) {
-        if (value.compareTo(node.value) == 0 && node.right == null) {
+    private Node<T> deleteNode(Node<T> root, T value) {
+        if (value.compareTo(root.value) < 0) {
+            if (root.left != null) {
+                if (isBlack(root.left) && isBlack(root.left.left)) {
+                    root = moveRedLeft(root);
+                }
+                root.left = deleteNode(root.left, value);
+            }
+            return fixUp(root);
+        }
+
+        if (isRed(root.left)) {
+            root = rightRotation(root);
+        }
+        if (value.compareTo(root.value) == 0 && root.right == null) {
             return null;
         }
 
-        if (value.compareTo(node.value) < 0) {
-            if (node.left != null) {
-                if (isBlack(node.left) && isBlack(node.left.left)) {
-                    node = moveRedLeft(node);
-                }
-                node.left = deleteNode(node.left, value);
+        if (root.right != null) {
+            if (isBlack(root.right) && isBlack(root.right.left)) {
+                root = moveRedRight(root);
             }
-            return fixUp(node);
-        }
-
-        if (isRed(node.left)) {
-            node = rightRotation(node);
-        }
-
-        if (node.right != null) {
-            if (isBlack(node.right) && isBlack(node.right.left)) {
-                node = moveRedRight(node);
-            }
-            if (value.compareTo(node.value) == 0) {
-                Node<T> minRBNode = findMinimum(node.right);
-                node.value = minRBNode.value;
-                node.right = deleteMinimum(node.right);
+            if (value.compareTo(root.value) == 0) {
+                Node<T> minRBNode = findMinimum(root.right);
+                root.value = minRBNode.value;
+                root.right = deleteMinimum(root.right);
             } else {
-                node.right = deleteNode(node.right, value);
+                root.right = deleteNode(root.right, value);
             }
         }
 
+        return fixUp(root);
+    }
+
+    private Node<T> findMinimum(Node<T> node) {
+        while (node.left != null) {
+            node = node.left;
+        }
+        return node;
+    }
+
+    private Node<T> deleteMinimum(Node<T> node) {
+        if (node.left == null) {
+            return null;
+        }
+        if (isBlack(node.left) && isBlack(node.left.left)) {
+            node = moveRedLeft(node);
+        }
+        node.left = deleteMinimum(node.left);
         return fixUp(node);
     }
 
@@ -357,17 +368,6 @@ class RedBlackTree<T extends Comparable<T>> {
             node.changeColor();
         }
         return node;
-    }
-
-    private Node<T> deleteMinimum(Node<T> node) {
-        if (node.left == null) {
-            return null;
-        }
-        if (isBlack(node.left) && isBlack(node.left.left)) {
-            node = moveRedLeft(node);
-        }
-        node.left = deleteMinimum(node.left);
-        return fixUp(node);
     }
 
 
