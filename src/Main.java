@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
+
 public class Main {
     public static void main(String[] args) throws IOException {
         AVLTree<Segment> tree = new AVLTree<>();
@@ -15,7 +16,7 @@ public class Main {
         Point[] points = new Point[n * 2];
 
         for (int i = 0; i < n * 2; i+=2) {
-            int[] nums = Arrays.stream(bf.readLine().split(" ")).mapToInt(x -> Integer.parseInt(x)).toArray();
+            long[] nums = Arrays.stream(bf.readLine().split(" ")).mapToLong(x -> Long.parseLong(x)).toArray();
             Point p = new Point(nums[0], nums[1], true);
             Point q = new Point(nums[2], nums[3]);
 
@@ -28,7 +29,7 @@ public class Main {
 
         }
 
-        mergeSort(points, n * 2);
+        quickSort(points, 0, n * 2 - 1);
 
 
 
@@ -65,44 +66,34 @@ public class Main {
 
     }
 
-    public static void mergeSort(Point[] a, int n) {
-        if (n < 2) {
-            return;
-        }
-        int mid = n / 2;
-        Point[] l = new Point[mid];
-        Point[] r = new Point[n - mid];
+    public static void quickSort(Point arr[], int begin, int end) {
+        if (begin < end) {
+            int partitionIndex = partition(arr, begin, end);
 
-        for (int i = 0; i < mid; i++) {
-            l[i] = a[i];
+            quickSort(arr, begin, partitionIndex-1);
+            quickSort(arr, partitionIndex+1, end);
         }
-        for (int i = mid; i < n; i++) {
-            r[i - mid] = a[i];
-        }
-        mergeSort(l, mid);
-        mergeSort(r, n - mid);
-
-        merge(a, l, r, mid, n - mid);
     }
 
-    public static void merge(
-            Point[] a, Point[] l, Point[] r, int left, int right) {
+    private static int partition(Point arr[], int begin, int end) {
+        Point pivot = arr[end];
+        int i = (begin-1);
 
-        int i = 0, j = 0, k = 0;
-        while (i < left && j < right) {
-            if (l[i].compareTo(r[j]) > 0) {
-                a[k++] = l[i++];
+        for (int j = begin; j < end; j++) {
+            if (arr[j].compareTo(pivot) > 0) {
+                i++;
+
+                Point swapTemp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = swapTemp;
             }
-            else {
-                a[k++] = r[j++];
-            }
         }
-        while (i < left) {
-            a[k++] = l[i++];
-        }
-        while (j < right) {
-            a[k++] = r[j++];
-        }
+
+        Point swapTemp = arr[i+1];
+        arr[i+1] = arr[end];
+        arr[end] = swapTemp;
+
+        return i+1;
     }
 
 }
@@ -110,8 +101,8 @@ public class Main {
 
 
 class Point  implements Comparable<Point>{
-    private int x;
-    private int y;
+    private long x;
+    private long y;
     private boolean left = false;
 
     private Segment segment;
@@ -124,22 +115,22 @@ class Point  implements Comparable<Point>{
         this.segment = segment;
     }
 
-    Point(int x, int y) {
+    Point(long x, long y) {
         this.x = x;
         this.y = y;
     }
 
-    Point(int x, int y, boolean left) {
+    Point(long x, long y, boolean left) {
         this.x = x;
         this.y = y;
         this.left = left;
     }
 
-    public int getX() {
+    public long getX() {
         return x;
     }
 
-    public int getY() {
+    public long getY() {
         return y;
     }
 
@@ -175,7 +166,7 @@ class Segment implements Comparable<Segment> {
     }
 
     public static Orientations getOrientation(Point p, Point q, Point r) {
-        int orientation = (q.getY() - p.getY()) * (r.getX() - q.getX()) -
+        long orientation = (q.getY() - p.getY()) * (r.getX() - q.getX()) -
                 (q.getX() - p.getX()) * (r.getY() - q.getY());
 
         if (orientation == 0) return Orientations.COLLINEAR;
@@ -202,7 +193,7 @@ class Segment implements Comparable<Segment> {
             return true;
         }
 
-        int denominator = ((s1.getP().getX() - s1.getQ().getX()) * (s2.getP().getY() - s2.getQ().getY()) -
+        long denominator = ((s1.getP().getX() - s1.getQ().getX()) * (s2.getP().getY() - s2.getQ().getY()) -
                 (s1.getP().getY() - s1.getQ().getY()) * (s2.getP().getX() - s2.getQ().getX()));
 
         if (denominator == 0){
@@ -210,10 +201,10 @@ class Segment implements Comparable<Segment> {
         }
 
 
-        int x = ((s1.getP().getX() * s1.getQ().getY() - s1.getP().getY() * s1.getQ().getX()) * (s2.getP().getX() -
+        long x = ((s1.getP().getX() * s1.getQ().getY() - s1.getP().getY() * s1.getQ().getX()) * (s2.getP().getX() -
                 s2.getQ().getX()) - (s1.getP().getX() - s1.getQ().getX()) * (s2.getP().getX() * s2.getQ().getY() -
                 s2.getP().getY() * s2.getQ().getX())) / denominator;
-        int y = ((s1.getP().getX() * s1.getQ().getY() - s1.getP().getY() * s1.getQ().getX()) * (s2.getP().getY() -
+        long y = ((s1.getP().getX() * s1.getQ().getY() - s1.getP().getY() * s1.getQ().getX()) * (s2.getP().getY() -
                 s2.getQ().getY()) - (s1.getP().getY() - s1.getQ().getY()) * (s2.getP().getX() * s2.getQ().getY() -
                 s2.getP().getY() * s2.getQ().getX())) / denominator;
 
@@ -227,8 +218,9 @@ class Segment implements Comparable<Segment> {
     }
 
     public static boolean onSegment(Segment s, Point r) {
-        if (s.getQ().getX() <= Math.max(s.getP().getX(), r.getX()) && s.getQ().getX() >= Math.min(s.getP().getX(), r.getX()) &&
-                s.getQ().getY() <= Math.max(s.getP().getY(), r.getY()) && s.getQ().getY() >= Math.min(s.getP().getY(), r.getY()))
+        if (s.getQ().getX() <= Math.max(s.getP().getX(), r.getX()) && s.getQ().getX() >=
+                Math.min(s.getP().getX(), r.getX()) && s.getQ().getY() <=
+                Math.max(s.getP().getY(), r.getY()) && s.getQ().getY() >= Math.min(s.getP().getY(), r.getY()))
             return true;
 
         return false;
