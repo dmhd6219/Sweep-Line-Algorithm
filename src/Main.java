@@ -1,3 +1,5 @@
+// Sviatoslav Sviatkin
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -207,7 +209,7 @@ class Node<T> {
         this.color = Colors.RED;
     }
 
-    public void changeColor(){
+    public void changeColor() {
         this.color = Colors.getOpposite(this.color);
         this.left.color = Colors.getOpposite(this.left.color);
         this.right.color = Colors.getOpposite(this.right.color);
@@ -230,9 +232,13 @@ class RedBlackTree<T extends Comparable<T>> {
         }
         if (value.compareTo(node.value) < 0) {
             node.left = insert(node.left, value);
-        } else if (value.compareTo(node.value) > 0) {
+        }
+
+        if (value.compareTo(node.value) > 0) {
             node.right = insert(node.right, value);
-        } else {
+        }
+
+        if (value.compareTo(node.value) == 0) {
             node.value = value;
         }
 
@@ -258,6 +264,13 @@ class RedBlackTree<T extends Comparable<T>> {
 
     private boolean isBlack(Node<T> node) {
         return !isRed(node);
+    }
+
+    private Node<T> findMinimum(Node<T> node) {
+        while (node.left != null) {
+            node = node.left;
+        }
+        return node;
     }
 
     private Node<T> leftRotation(Node<T> root) {
@@ -293,6 +306,10 @@ class RedBlackTree<T extends Comparable<T>> {
     }
 
     private Node<T> deleteNode(Node<T> node, T value) {
+        if (value.compareTo(node.value) == 0 && node.right == null) {
+            return null;
+        }
+
         if (value.compareTo(node.value) < 0) {
             if (node.left != null) {
                 if (isBlack(node.left) && isBlack(node.left.left)) {
@@ -306,18 +323,15 @@ class RedBlackTree<T extends Comparable<T>> {
         if (isRed(node.left)) {
             node = rightRotation(node);
         }
-        if (value.compareTo(node.value) == 0 && node.right == null) {
-            return null;
-        }
 
         if (node.right != null) {
             if (isBlack(node.right) && isBlack(node.right.left)) {
                 node = moveRedRight(node);
             }
             if (value.compareTo(node.value) == 0) {
-                Node<T> minRBNode = findMin(node.right);
+                Node<T> minRBNode = findMinimum(node.right);
                 node.value = minRBNode.value;
-                node.right = deleteMin(node.right);
+                node.right = deleteMinimum(node.right);
             } else {
                 node.right = deleteNode(node.right, value);
             }
@@ -336,17 +350,6 @@ class RedBlackTree<T extends Comparable<T>> {
         return node;
     }
 
-    private Node<T> deleteMin(Node<T> node) {
-        if (node.left == null) {
-            return null;
-        }
-        if (isBlack(node.left) && isBlack(node.left.left)) {
-            node = moveRedLeft(node);
-        }
-        node.left = deleteMin(node.left);
-        return fixUp(node);
-    }
-
     private Node<T> moveRedRight(Node<T> node) {
         node.changeColor();
         if (isRed(node.left.left)) {
@@ -356,12 +359,17 @@ class RedBlackTree<T extends Comparable<T>> {
         return node;
     }
 
-    private Node<T> findMin(Node<T> node) {
-        while (node.left != null) {
-            node = node.left;
+    private Node<T> deleteMinimum(Node<T> node) {
+        if (node.left == null) {
+            return null;
         }
-        return node;
+        if (isBlack(node.left) && isBlack(node.left.left)) {
+            node = moveRedLeft(node);
+        }
+        node.left = deleteMinimum(node.left);
+        return fixUp(node);
     }
+
 
     private Node<T> fixUp(Node<T> node) {
         if (isRed(node.right)) {
@@ -376,7 +384,7 @@ class RedBlackTree<T extends Comparable<T>> {
         return node;
     }
 
-    T getPredecessor(T value) {
+    public T getPredecessor(T value) {
         Node<T> current = root;
         Node<T> predecessor = null;
 
@@ -391,7 +399,7 @@ class RedBlackTree<T extends Comparable<T>> {
         return predecessor == null ? null : predecessor.value;
     }
 
-    T getSuccessor(T value) {
+    public T getSuccessor(T value) {
         Node<T> current = root;
         Node<T> successor = null;
 
