@@ -13,7 +13,7 @@ public class Main {
 
         Point[] points = new Point[n * 2];
 
-        for (int i = 0; i < n * 2; i += 2) {
+        for (int i = 0; i < n * 2; i+=2) {
             long[] nums = Arrays.stream(bf.readLine().split(" ")).mapToLong(x -> Long.parseLong(x)).toArray();
             Point p = new Point(nums[0], nums[1], true);
             Point q = new Point(nums[2], nums[3]);
@@ -28,6 +28,8 @@ public class Main {
         }
 
         quickSort(points, 0, n * 2 - 1);
+
+
 
 
         for (Point point : points) {
@@ -66,14 +68,14 @@ public class Main {
         if (begin < end) {
             int partitionIndex = partition(arr, begin, end);
 
-            quickSort(arr, begin, partitionIndex - 1);
-            quickSort(arr, partitionIndex + 1, end);
+            quickSort(arr, begin, partitionIndex-1);
+            quickSort(arr, partitionIndex+1, end);
         }
     }
 
     private static int partition(Point arr[], int begin, int end) {
         Point pivot = arr[end];
-        int i = (begin - 1);
+        int i = (begin-1);
 
         for (int j = begin; j < end; j++) {
             if (arr[j].compareTo(pivot) > 0) {
@@ -85,17 +87,18 @@ public class Main {
             }
         }
 
-        Point swapTemp = arr[i + 1];
-        arr[i + 1] = arr[end];
+        Point swapTemp = arr[i+1];
+        arr[i+1] = arr[end];
         arr[end] = swapTemp;
 
-        return i + 1;
+        return i+1;
     }
 
 }
 
 
-class Point implements Comparable<Point> {
+
+class Point  implements Comparable<Point>{
     private long x;
     private long y;
     private boolean left = false;
@@ -191,7 +194,7 @@ class Segment implements Comparable<Segment> {
         long denominator = ((s1.getP().getX() - s1.getQ().getX()) * (s2.getP().getY() - s2.getQ().getY()) -
                 (s1.getP().getY() - s1.getQ().getY()) * (s2.getP().getX() - s2.getQ().getX()));
 
-        if (denominator == 0) {
+        if (denominator == 0){
             return false;
         }
 
@@ -232,21 +235,20 @@ class Segment implements Comparable<Segment> {
     }
 }
 
+
+
 enum Orientations {
-    COLLINEAR, CLOCKWISE, COUNTERCLOCKWISE;
+    COLLINEAR, CLOCKWISE, COUNTERCLOCKWISE
 }
 
-enum Colors {
+enum Colors{
     RED, BLACK;
-
-    public static Colors getOpposite(Colors color) {
+    public static Colors getOpposite(Colors color){
         return color == RED ? BLACK : RED;
     }
-
-
 }
 
-class Node<T extends Comparable<T>> {
+class Node<T> {
     T value;
     Node left, right;
     Colors color;
@@ -259,7 +261,7 @@ class Node<T extends Comparable<T>> {
 
 class RedBlackTree<T extends Comparable<T>> {
     private Node<T> root;
-
+    
 
     public void insert(T value) {
         root = insert(root, value);
@@ -268,7 +270,7 @@ class RedBlackTree<T extends Comparable<T>> {
 
     private Node<T> insert(Node<T> node, T value) {
         if (node == null) {
-            return new Node(value);
+            return new Node<T>(value);
         }
         if (value.compareTo(node.value) < 0) {
             node.left = insert(node.left, value);
@@ -279,28 +281,27 @@ class RedBlackTree<T extends Comparable<T>> {
         }
 
         if (isRed(node.right) && !isRed(node.left)) {
-            return rotateLeft(node);
+            node = rotateLeft(node);
         }
         if (isRed(node.left) && isRed(node.left.left)) {
-            return rotateRight(node);
+            node = rotateRight(node);
         }
         if (isRed(node.left) && isRed(node.right)) {
             flipColors(node);
-            return node;
         }
 
         return node;
     }
 
-    private boolean isRed(Node node) {
+    private boolean isRed(Node<T> node) {
         if (node == null) {
             return false;
         }
         return node.color == Colors.RED;
     }
 
-    private Node<T> rotateLeft(Node node) {
-        Node x = node.right;
+    private Node<T> rotateLeft(Node<T> node) {
+        Node<T> x = node.right;
         node.right = x.left;
         x.left = node;
         x.color = node.color;
@@ -308,8 +309,8 @@ class RedBlackTree<T extends Comparable<T>> {
         return x;
     }
 
-    private Node<T> rotateRight(Node node) {
-        Node x = node.left;
+    private Node<T> rotateRight(Node<T> node) {
+        Node<T> x = node.left;
         node.left = x.right;
         x.right = node;
         x.color = node.color;
@@ -317,10 +318,11 @@ class RedBlackTree<T extends Comparable<T>> {
         return x;
     }
 
-    private Node<T> flipColors(Node node) {
+    private Node<T> flipColors(Node<T> node) {
         node.color = Colors.getOpposite(node.color);
         node.left.color = Colors.getOpposite(node.left.color);
         node.right.color = Colors.getOpposite(node.right.color);
+
         return node;
     }
 
@@ -355,8 +357,8 @@ class RedBlackTree<T extends Comparable<T>> {
                     node = moveRedRight(node);
                 }
                 if (value.compareTo(node.value) == 0) {
-                    Node<T> minNode = findMin(node.right);
-                    node.value = minNode.value;
+                    Node<T> minRBNode = findMin(node.right);
+                    node.value = minRBNode.value;
                     node.right = deleteMin(node.right);
                 } else {
                     node.right = delete(node.right, value);
@@ -366,7 +368,7 @@ class RedBlackTree<T extends Comparable<T>> {
         return fixUp(node);
     }
 
-    private Node<T> moveRedLeft(Node node) {
+    private Node<T> moveRedLeft(Node<T> node) {
         flipColors(node);
         if (isRed(node.right.left)) {
             node.right = rotateRight(node.right);
@@ -376,7 +378,7 @@ class RedBlackTree<T extends Comparable<T>> {
         return node;
     }
 
-    private Node<T> deleteMin(Node node) {
+    private Node<T> deleteMin(Node<T> node) {
         if (node.left == null) {
             return null;
         }
@@ -387,7 +389,7 @@ class RedBlackTree<T extends Comparable<T>> {
         return fixUp(node);
     }
 
-    private Node<T> moveRedRight(Node node) {
+    private Node<T> moveRedRight(Node<T> node) {
         flipColors(node);
         if (isRed(node.left.left)) {
             node = rotateRight(node);
@@ -396,60 +398,56 @@ class RedBlackTree<T extends Comparable<T>> {
         return node;
     }
 
-    private Node<T> findMin(Node node) {
+    private Node<T> findMin(Node<T> node) {
         while (node.left != null) {
             node = node.left;
         }
         return node;
     }
 
-    private Node<T> fixUp(Node node) {
+    private Node<T> fixUp(Node<T> node) {
         if (isRed(node.right)) {
-            node = rotateLeft(node);
+            return rotateLeft(node);
         }
         if (isRed(node.left) && isRed(node.left.left)) {
-            node = rotateRight(node);
+            return rotateRight(node);
         }
         if (isRed(node.left) && isRed(node.right)) {
-            flipColors(node);
+            return flipColors(node);
         }
         return node;
     }
 
     public T getPredecessor(T elem) {
-        Node<T> x = root;
-        Node<T> getPredecessor = null;
-        while (x != null) {
-            if (elem.compareTo(x.value) <= 0) {
-                x = x.left;
+        Node<T> node = root;
+        Node<T> predecessor = null;
+        while (node != null) {
+            if (elem.compareTo(node.value) <= 0) {
+                node = node.left;
             } else {
-                getPredecessor = x;
-                x = x.right;
+                predecessor = node;
+                node = node.right;
             }
         }
-        if (getPredecessor == null) {
-            return null;
-        } else {
-            return getPredecessor.value;
-        }
+        return predecessor == null ? null : predecessor.value;
     }
 
     public T getSuccessor(T elem) {
-        Node<T> Node = root;
-        Node<T> getSuccessor = null;
-        while (Node != null) {
-            if (Node.value.compareTo(elem) > 0) {
-                getSuccessor = Node;
-                Node = Node.left;
-            } else if (Node.value.compareTo(elem) < 0) {
-                Node = Node.right;
+        Node<T> node = root;
+        Node<T> successor = null;
+        while (node != null) {
+            if (node.value.compareTo(elem) > 0) {
+                successor = node;
+                node = node.left;
+            } else if (node.value.compareTo(elem) < 0) {
+                node = node.right;
             } else {
-                if (Node.right != null) {
-                    getSuccessor = findMin(Node.right);
+                if (node.right != null) {
+                    successor = findMin(node.right);
                 }
                 break;
             }
         }
-        return getSuccessor == null ? null : getSuccessor.value;
+        return successor == null ? null : successor.value;
     }
 }
