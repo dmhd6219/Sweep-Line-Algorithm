@@ -13,8 +13,8 @@ public class Main {
 
         Point[] points = new Point[n * 2];
 
-        for (int i = 0; i < n * 2; i+=2) {
-            long[] nums = Arrays.stream(bf.readLine().split(" ")).mapToLong(x -> Long.parseLong(x)).toArray();
+        for (int i = 0; i < n * 2; i += 2) {
+            long[] nums = Arrays.stream(bf.readLine().split(" ")).mapToLong(Long::parseLong).toArray();
             Point p = new Point(nums[0], nums[1], true);
             Point q = new Point(nums[2], nums[3]);
 
@@ -27,36 +27,34 @@ public class Main {
 
         }
 
-        quickSort(points, 0, n * 2 - 1);
-
-
+        Sort<Point> sort = new Sort<>();
+        sort.quickSort(points, 0, 2 * n - 1);
 
 
         for (Point point : points) {
-            if (point.isLeft()) {
-                tree.insert(point.getSegment());
+            Segment segment = point.getSegment();
+            Segment predecessor = tree.getPredecessor(segment);
+            Segment successor = tree.getSuccessor(segment);
 
-                if (Segment.intersect(point.getSegment(), tree.getPredecessor(point.getSegment()))) {
-                    System.out.println("INTERSECTION");
-                    System.out.printf("%s\n%s\n", point.getSegment(), tree.getPredecessor(point.getSegment()));
-                    System.exit(0);
+            if (point.isLeft()) {
+                tree.insert(segment);
+
+                if (Segment.areIntersect(segment, predecessor)) {
+                    System.out.printf("INTERSECTION\n%s\n%s\n", segment, predecessor);
+                    return;
                 }
-                if (Segment.intersect(
-                        point.getSegment(),
-                        tree.getSuccessor(
-                                point.getSegment()))) {
-                    System.out.println("INTERSECTION");
-                    System.out.printf("%s\n%s\n", point.getSegment(), tree.getSuccessor(point.getSegment()));
-                    System.exit(0);
+                if (Segment.areIntersect(segment, successor)) {
+                    System.out.printf("INTERSECTION\n%s\n%s\n", segment, predecessor);
+                    return;
                 }
-            } else {
-                if (Segment.intersect(tree.getPredecessor(point.getSegment()),
-                        tree.getSuccessor(point.getSegment()))) {
-                    System.out.println("INTERSECTION");
-                    System.out.printf("%s\n%s\n", tree.getPredecessor(point.getSegment()), tree.getSuccessor(point.getSegment()));
-                    System.exit(0);
+            }
+
+            if (!point.isLeft()) {
+                if (Segment.areIntersect(predecessor, successor)) {
+                    System.out.printf("INTERSECTION\n%s\n%s\n", segment, predecessor);
+                    return;
                 }
-                tree.delete(point.getSegment());
+                tree.delete(segment);
             }
         }
 
@@ -64,43 +62,45 @@ public class Main {
 
     }
 
-    public static void quickSort(Point arr[], int begin, int end) {
+
+}
+
+class Sort<T extends Comparable<T>> {
+    public void quickSort(T[] arr, int begin, int end) {
         if (begin < end) {
             int partitionIndex = partition(arr, begin, end);
 
-            quickSort(arr, begin, partitionIndex-1);
-            quickSort(arr, partitionIndex+1, end);
+            quickSort(arr, begin, partitionIndex - 1);
+            quickSort(arr, partitionIndex + 1, end);
         }
     }
 
-    private static int partition(Point arr[], int begin, int end) {
-        Point pivot = arr[end];
-        int i = (begin-1);
+    private int partition(T[] arr, int begin, int end) {
+        T pivot = arr[end];
+        int i = (begin - 1);
 
         for (int j = begin; j < end; j++) {
             if (arr[j].compareTo(pivot) > 0) {
                 i++;
 
-                Point swapTemp = arr[i];
+                T swapTemp = arr[i];
                 arr[i] = arr[j];
                 arr[j] = swapTemp;
             }
         }
 
-        Point swapTemp = arr[i+1];
-        arr[i+1] = arr[end];
+        T swapTemp = arr[i + 1];
+        arr[i + 1] = arr[end];
         arr[end] = swapTemp;
 
-        return i+1;
+        return i + 1;
     }
 
 }
 
-
-
-class Point  implements Comparable<Point>{
-    private long x;
-    private long y;
+class Point implements Comparable<Point> {
+    private final long x;
+    private final long y;
     private boolean left = false;
 
     private Segment segment;
@@ -142,91 +142,40 @@ class Point  implements Comparable<Point>{
 
     @Override
     public int compareTo(Point o) {
-        return getX() > o.getX() ? 1 : getX() == o.getX() ? 0 : -1;
+        return Long.compare(getX(), o.getX());
     }
 }
 
-class Segment implements Comparable<Segment> {
-    private Point p;
-    private Point q;
-
-    Segment(Point p, Point q) {
-        this.p = p;
-        this.q = q;
-    }
-
-    public Point getP() {
-        return p;
-    }
-
-    public Point getQ() {
-        return q;
-    }
+record Segment(Point p, Point q) implements Comparable<Segment> {
 
     public static Orientations getOrientation(Point p, Point q, Point r) {
-        long orientation = (q.getY() - p.getY()) * (r.getX() - q.getX()) -
-                (q.getX() - p.getX()) * (r.getY() - q.getY());
+        long orientation = (q.getY() - p.getY()) * (r.getX() - q.getX()) - (q.getX() - p.getX()) * (r.getY() - q.getY());
 
         if (orientation == 0) return Orientations.COLLINEAR;
 
         return (orientation > 0) ? Orientations.CLOCKWISE : Orientations.COUNTERCLOCKWISE;
     }
 
-    public static boolean intersect(Segment s1, Segment s2) {
+    public static boolean areIntersect(Segment s1, Segment s2) {
         if (s1 == null || s2 == null) {
             return false;
         }
 
-        Orientations o1 = getOrientation(s1.getP(), s1.getQ(), s2.getP());
-        Orientations o2 = getOrientation(s1.getP(), s1.getQ(), s2.getQ());
-        Orientations o3 = getOrientation(s2.getP(), s2.getQ(), s1.getP());
-        Orientations o4 = getOrientation(s2.getP(), s2.getQ(), s1.getQ());
+        Orientations o1 = getOrientation(s1.p(), s1.q(), s2.p());
+        Orientations o2 = getOrientation(s1.p(), s1.q(), s2.q());
+        Orientations o3 = getOrientation(s2.p(), s2.q(), s1.p());
+        Orientations o4 = getOrientation(s2.p(), s2.q(), s1.q());
 
-        if (o1 == Orientations.COLLINEAR || o2 == Orientations.COLLINEAR || o3 == Orientations.COLLINEAR ||
-                o4 == Orientations.COLLINEAR) {
+        if (o1 == Orientations.COLLINEAR || o2 == Orientations.COLLINEAR || o3 == Orientations.COLLINEAR || o4 == Orientations.COLLINEAR) {
             return false;
         }
 
-        if (o1 != o2 && o3 != o4) {
-            return true;
-        }
-
-        long denominator = ((s1.getP().getX() - s1.getQ().getX()) * (s2.getP().getY() - s2.getQ().getY()) -
-                (s1.getP().getY() - s1.getQ().getY()) * (s2.getP().getX() - s2.getQ().getX()));
-
-        if (denominator == 0){
-            return false;
-        }
-
-
-        long x = ((s1.getP().getX() * s1.getQ().getY() - s1.getP().getY() * s1.getQ().getX()) * (s2.getP().getX() -
-                s2.getQ().getX()) - (s1.getP().getX() - s1.getQ().getX()) * (s2.getP().getX() * s2.getQ().getY() -
-                s2.getP().getY() * s2.getQ().getX())) / denominator;
-        long y = ((s1.getP().getX() * s1.getQ().getY() - s1.getP().getY() * s1.getQ().getX()) * (s2.getP().getY() -
-                s2.getQ().getY()) - (s1.getP().getY() - s1.getQ().getY()) * (s2.getP().getX() * s2.getQ().getY() -
-                s2.getP().getY() * s2.getQ().getX())) / denominator;
-
-        Point p = new Point(x, y);
-
-        if (!onSegment(s1, p) || !onSegment(s2, p)) {
-            return false;
-        }
-
-        return false;
-    }
-
-    public static boolean onSegment(Segment s, Point r) {
-        if (s.getQ().getX() <= Math.max(s.getP().getX(), r.getX()) && s.getQ().getX() >=
-                Math.min(s.getP().getX(), r.getX()) && s.getQ().getY() <=
-                Math.max(s.getP().getY(), r.getY()) && s.getQ().getY() >= Math.min(s.getP().getY(), r.getY()))
-            return true;
-
-        return false;
+        return o1 != o2 && o3 != o4;
     }
 
     @Override
     public int compareTo(Segment other) {
-        return (int) (p.getX() - other.p.getX());
+        return Long.compare(p.getX(), other.p().getX());
     }
 
     @Override
@@ -236,32 +185,39 @@ class Segment implements Comparable<Segment> {
 }
 
 
-
 enum Orientations {
     COLLINEAR, CLOCKWISE, COUNTERCLOCKWISE
 }
 
-enum Colors{
+enum Colors {
     RED, BLACK;
-    public static Colors getOpposite(Colors color){
+
+    public static Colors getOpposite(Colors color) {
         return color == RED ? BLACK : RED;
     }
 }
 
 class Node<T> {
     T value;
-    Node left, right;
+    Node<T> left, right;
     Colors color;
 
     public Node(T value) {
         this.value = value;
         this.color = Colors.RED;
     }
+
+    public void changeColor(){
+        this.color = Colors.getOpposite(this.color);
+        this.left.color = Colors.getOpposite(this.left.color);
+        this.right.color = Colors.getOpposite(this.right.color);
+
+    }
 }
 
 class RedBlackTree<T extends Comparable<T>> {
     private Node<T> root;
-    
+
 
     public void insert(T value) {
         root = insert(root, value);
@@ -270,7 +226,7 @@ class RedBlackTree<T extends Comparable<T>> {
 
     private Node<T> insert(Node<T> node, T value) {
         if (node == null) {
-            return new Node<T>(value);
+            return new Node<>(value);
         }
         if (value.compareTo(node.value) < 0) {
             node.left = insert(node.left, value);
@@ -280,14 +236,14 @@ class RedBlackTree<T extends Comparable<T>> {
             node.value = value;
         }
 
-        if (isRed(node.right) && !isRed(node.left)) {
-            node = rotateLeft(node);
+        if (isRed(node.right) && isBlack(node.left)) {
+            node = leftRotation(node);
         }
         if (isRed(node.left) && isRed(node.left.left)) {
-            node = rotateRight(node);
+            node = rightRotation(node);
         }
         if (isRed(node.left) && isRed(node.right)) {
-            flipColors(node);
+            node.changeColor();
         }
 
         return node;
@@ -300,80 +256,82 @@ class RedBlackTree<T extends Comparable<T>> {
         return node.color == Colors.RED;
     }
 
-    private Node<T> rotateLeft(Node<T> node) {
-        Node<T> x = node.right;
-        node.right = x.left;
-        x.left = node;
-        x.color = node.color;
-        node.color = Colors.RED;
-        return x;
+    private boolean isBlack(Node<T> node) {
+        return !isRed(node);
     }
 
-    private Node<T> rotateRight(Node<T> node) {
-        Node<T> x = node.left;
-        node.left = x.right;
-        x.right = node;
-        x.color = node.color;
-        node.color = Colors.RED;
-        return x;
-    }
+    private Node<T> leftRotation(Node<T> root) {
+        Node<T> node = root.right;
+        root.right = node.left;
 
-    private Node<T> flipColors(Node<T> node) {
-        node.color = Colors.getOpposite(node.color);
-        node.left.color = Colors.getOpposite(node.left.color);
-        node.right.color = Colors.getOpposite(node.right.color);
-
+        node.left = root;
+        node.color = root.color;
+        root.color = Colors.RED;
         return node;
     }
+
+    private Node<T> rightRotation(Node<T> root) {
+        Node<T> node = root.left;
+        root.left = node.right;
+
+        node.right = root;
+        node.color = root.color;
+        root.color = Colors.RED;
+        return node;
+    }
+
 
     public void delete(T value) {
         if (root == null) {
             return;
         }
 
-        root = delete(root, value);
+        root = deleteNode(root, value);
         if (root != null) {
             root.color = Colors.BLACK;
         }
     }
 
-    private Node<T> delete(Node<T> node, T value) {
+    private Node<T> deleteNode(Node<T> node, T value) {
         if (value.compareTo(node.value) < 0) {
             if (node.left != null) {
-                if (!isRed(node.left) && !isRed(node.left.left)) {
+                if (isBlack(node.left) && isBlack(node.left.left)) {
                     node = moveRedLeft(node);
                 }
-                node.left = delete(node.left, value);
+                node.left = deleteNode(node.left, value);
             }
-        } else {
-            if (isRed(node.left)) {
-                node = rotateRight(node);
+            return fixUp(node);
+        }
+
+        if (isRed(node.left)) {
+            node = rightRotation(node);
+        }
+        if (value.compareTo(node.value) == 0 && node.right == null) {
+            return null;
+        }
+
+        if (node.right != null) {
+            if (isBlack(node.right) && isBlack(node.right.left)) {
+                node = moveRedRight(node);
             }
-            if (value.compareTo(node.value) == 0 && node.right == null) {
-                return null;
-            }
-            if (node.right != null) {
-                if (!isRed(node.right) && !isRed(node.right.left)) {
-                    node = moveRedRight(node);
-                }
-                if (value.compareTo(node.value) == 0) {
-                    Node<T> minRBNode = findMin(node.right);
-                    node.value = minRBNode.value;
-                    node.right = deleteMin(node.right);
-                } else {
-                    node.right = delete(node.right, value);
-                }
+            if (value.compareTo(node.value) == 0) {
+                Node<T> minRBNode = findMin(node.right);
+                node.value = minRBNode.value;
+                node.right = deleteMin(node.right);
+            } else {
+                node.right = deleteNode(node.right, value);
             }
         }
+
         return fixUp(node);
     }
 
     private Node<T> moveRedLeft(Node<T> node) {
-        flipColors(node);
+        node.changeColor();
         if (isRed(node.right.left)) {
-            node.right = rotateRight(node.right);
-            node = rotateLeft(node);
-            flipColors(node);
+            node.right = rightRotation(node.right);
+            node = leftRotation(node);
+            node.changeColor();
         }
         return node;
     }
@@ -382,7 +340,7 @@ class RedBlackTree<T extends Comparable<T>> {
         if (node.left == null) {
             return null;
         }
-        if (!isRed(node.left) && !isRed(node.left.left)) {
+        if (isBlack(node.left) && isBlack(node.left.left)) {
             node = moveRedLeft(node);
         }
         node.left = deleteMin(node.left);
@@ -390,10 +348,10 @@ class RedBlackTree<T extends Comparable<T>> {
     }
 
     private Node<T> moveRedRight(Node<T> node) {
-        flipColors(node);
+        node.changeColor();
         if (isRed(node.left.left)) {
-            node = rotateRight(node);
-            flipColors(node);
+            node = rightRotation(node);
+            node.changeColor();
         }
         return node;
     }
@@ -407,45 +365,46 @@ class RedBlackTree<T extends Comparable<T>> {
 
     private Node<T> fixUp(Node<T> node) {
         if (isRed(node.right)) {
-            return rotateLeft(node);
+            node = leftRotation(node);
         }
         if (isRed(node.left) && isRed(node.left.left)) {
-            return rotateRight(node);
+            node = rightRotation(node);
         }
         if (isRed(node.left) && isRed(node.right)) {
-            return flipColors(node);
+            node.changeColor();
         }
         return node;
     }
 
-    public T getPredecessor(T elem) {
-        Node<T> node = root;
+    T getPredecessor(T value) {
+        Node<T> current = root;
         Node<T> predecessor = null;
-        while (node != null) {
-            if (elem.compareTo(node.value) <= 0) {
-                node = node.left;
+
+        while (current != null) {
+            predecessor = current;
+            if (value.compareTo(current.value) <= 0) {
+                current = current.left;
             } else {
-                predecessor = node;
-                node = node.right;
+                current = current.right;
             }
         }
         return predecessor == null ? null : predecessor.value;
     }
 
-    public T getSuccessor(T elem) {
-        Node<T> node = root;
+    T getSuccessor(T value) {
+        Node<T> current = root;
         Node<T> successor = null;
-        while (node != null) {
-            if (node.value.compareTo(elem) > 0) {
-                successor = node;
-                node = node.left;
-            } else if (node.value.compareTo(elem) < 0) {
-                node = node.right;
-            } else {
-                if (node.right != null) {
-                    successor = findMin(node.right);
+
+        while (current != null) {
+            if (value.compareTo(current.value) <= 0) {
+                if (current.left != null && current.left.value == value) {
+                    successor = current;
+                } else if (current.value == value && current.right != null) {
+                    successor = current.right;
                 }
-                break;
+                current = current.left;
+            } else {
+                current = current.right;
             }
         }
         return successor == null ? null : successor.value;
