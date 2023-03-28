@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 
 
+
 /**
  * The Main class.
  *
@@ -692,13 +693,13 @@ class RedBlackTree<T extends Comparable<T>> {
 
 /*
 Task 2.1.2
-    It's true that several industries, including computer graphics, robotics, geographic information systems,
+    It's true that some industries, like computer graphics, robotics, geographic information systems,
     and computer vision, face the challenge of detecting the intersection of two line segments.
     Here are some additional applications of line segment intersection:
 
         1) For the purpose of detecting collisions between objects in a scene, line segment intersection is used in
         computer games and simulations. It is possible to tell if two things are in contact or if they are colliding by
-        examining whether the line segments that represent the two objects intersect.
+        examining if the line segments that represent the two objects intersect.
 
         2) It is used in pattern identification in computer vision and image processing.
         It is feasible to utilize line segment intersection algorithms to find characteristics like corners,
@@ -723,4 +724,11 @@ Task 2.1.4
     * Worst O(n^2), average O(nlog(n))
     * In-place
     * No, it is not stable
+
+Task 2.1.6
+    It was tested only on tests from
+    <a href="https://codeforces.com/group/v3tYbkCHj3/contest/434034/problem/A">CodeForces<a/>
+    However, I faced Time Limit problem on test 12, and I didn't know what to do.
+    After changing tree from AVL to {@link RedBlackTree} I got full solution.
+
  */
