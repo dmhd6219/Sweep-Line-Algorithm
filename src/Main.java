@@ -6,7 +6,18 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 
 
+/**
+ * The Main class.
+ *
+ * @author Sviatoslav Sviatkin
+ */
 public class Main {
+    /**
+     * The entry point of application.
+     *
+     * @param args the input arguments
+     * @throws IOException the io exception
+     */
     public static void main(String[] args) throws IOException {
         RedBlackTree<Segment> tree = new RedBlackTree<>();
 
@@ -39,7 +50,7 @@ public class Main {
             Segment successor = tree.getSuccessor(segment);
 
             if (point.isLeft()) {
-                tree.insert(segment);
+                tree.put(segment);
 
                 if (Segment.areIntersect(segment, predecessor)) {
                     System.out.printf("INTERSECTION\n%s\n%s\n", segment, predecessor);
@@ -51,7 +62,7 @@ public class Main {
                 }
             }
 
-            if (!point.isLeft()) {
+            if (point.isRight()) {
                 if (Segment.areIntersect(predecessor, successor)) {
                     System.out.printf("INTERSECTION\n%s\n%s\n", segment, predecessor);
                     return;
@@ -67,7 +78,19 @@ public class Main {
 
 }
 
+/**
+ * Class with quick sort algorithm.
+ *
+ * @param <T> the type parameter
+ */
 class Sort<T extends Comparable<T>> {
+    /**
+     * Quick sort method.
+     *
+     * @param arr   the array to sort
+     * @param begin the beginning index
+     * @param end   the end index
+     */
     public void quickSort(T[] arr, int begin, int end) {
         if (begin < end) {
             int partitionIndex = partition(arr, begin, end);
@@ -77,6 +100,15 @@ class Sort<T extends Comparable<T>> {
         }
     }
 
+    /**
+     * Positions the last component as the pivot.
+     * After that, if the value of any element is smaller than the pivot, it is replaced.
+     *
+     * @param arr   the array to sort
+     * @param begin the beginning index
+     * @param end   the end index
+     * @return position of pivot
+     */
     private int partition(T[] arr, int begin, int end) {
         T pivot = arr[end];
         int i = (begin - 1);
@@ -100,6 +132,9 @@ class Sort<T extends Comparable<T>> {
 
 }
 
+/**
+ * Point class.
+ */
 class Point implements Comparable<Point> {
     private final long x;
     private final long y;
@@ -107,49 +142,116 @@ class Point implements Comparable<Point> {
 
     private Segment segment;
 
+    /**
+     * Gets {@link Segment} that contains this {@link Point}.
+     *
+     * @return the segment
+     */
     public Segment getSegment() {
         return segment;
     }
 
+    /**
+     * Sets {@link Segment} that contains this {@link Point}.
+     *
+     * @param segment the segment
+     */
     public void setSegment(Segment segment) {
         this.segment = segment;
     }
 
+    /**
+     * Instantiates a new {@link Point}.
+     *
+     * @param x the x coordinate
+     * @param y the y coordinate
+     */
     Point(long x, long y) {
         this.x = x;
         this.y = y;
     }
 
+    /**
+     * Instantiates a new {@link Point}.
+     *
+     * @param x    the x coordinate
+     * @param y    the y coordinate
+     * @param left is this {@link Point} left at {@link Segment}
+     */
     Point(long x, long y, boolean left) {
         this.x = x;
         this.y = y;
         this.left = left;
     }
 
+    /**
+     * Gets x coordinate.
+     *
+     * @return the x
+     */
     public long getX() {
         return x;
     }
 
+    /**
+     * Gets y coordinate.
+     *
+     * @return the y
+     */
     public long getY() {
         return y;
     }
 
+    @Override
     public String toString() {
         return String.format("%d %d", x, y);
     }
 
+    /**
+     * Checks is this {@link Point} left at {@link Segment}.
+     *
+     * @return {@code true} is this {@link Point} left at {@link Segment}, otherwise {@code false}
+     */
     public boolean isLeft() {
         return left;
     }
 
-    @Override
-    public int compareTo(Point o) {
-        return Long.compare(getX(), o.getX());
+    /**
+     * Checks is this {@link Point} right at {@link Segment}.
+     *
+     * @return {@code true} is this {@link Point} right at {@link Segment}, otherwise {@code false}
+     */
+    public boolean isRight() {
+        return !isLeft();
     }
+
+    @Override
+    public int compareTo(Point other) {
+        return Long.compare(getX(), other.getX());
+    }
+
+
 }
 
+/**
+ * Segment class.
+ */
 record Segment(Point p, Point q) implements Comparable<Segment> {
 
+    // To find orientation of ordered triplet (p, q, r).
+// The function returns following values
+// 0 --> p, q and r are collinear
+// 1 --> Clockwise
+// 2 --> Counterclockwise
+
+    /**
+     * Finds orientation of ordered triplet of {@link Point}s
+     *
+     * @param p first point
+     * @param q second point
+     * @param r third point
+     * @return the {@link Orientations} orientation
+     */
     public static Orientations getOrientation(Point p, Point q, Point r) {
         long orientation = (q.getY() - p.getY()) * (r.getX() - q.getX()) - (q.getX() - p.getX()) * (r.getY() - q.getY());
 
@@ -158,6 +260,13 @@ record Segment(Point p, Point q) implements Comparable<Segment> {
         return (orientation > 0) ? Orientations.CLOCKWISE : Orientations.COUNTERCLOCKWISE;
     }
 
+    /**
+     * Checks if two {@link Segment}s are intersecting.
+     *
+     * @param s1 first segment
+     * @param s2 second segment
+     * @return {@code true} if segments are intersecting, otherwise {@code false}
+     */
     public static boolean areIntersect(Segment s1, Segment s2) {
         if (s1 == null || s2 == null) {
             return false;
@@ -187,28 +296,70 @@ record Segment(Point p, Point q) implements Comparable<Segment> {
 }
 
 
+/**
+ * The enum with orientation names.
+ */
 enum Orientations {
-    COLLINEAR, CLOCKWISE, COUNTERCLOCKWISE
+    COLLINEAR,
+    CLOCKWISE,
+    COUNTERCLOCKWISE
 }
 
+/**
+ * The enum with color names.
+ */
 enum Colors {
-    RED, BLACK;
+    RED,
+    BLACK;
 
+    /**
+     * Gets opposite color.
+     *
+     * @param color the color
+     * @return opposite color
+     */
     public static Colors getOpposite(Colors color) {
         return color == RED ? BLACK : RED;
     }
 }
 
-class Node<T> {
+
+/**
+ * The Node for {@link RedBlackTree}.
+ *
+ * @param <T> the parameter of type
+ */
+class Node<T extends Comparable<T>> {
+    /**
+     * Value of this {@link Node}.
+     */
     T value;
-    Node<T> left, right;
+    /**
+     * Left child.
+     */
+    Node<T> left,
+    /**
+     * Right child.
+     */
+    right;
+    /**
+     * Color of this {@link Node}.
+     */
     Colors color;
 
+    /**
+     * Instantiates a new {@link Node}.
+     *
+     * @param value the value of this {@link Node}
+     */
     public Node(T value) {
         this.value = value;
         this.color = Colors.RED;
     }
 
+    /**
+     * Changes color of this {@link Node} and its children to opposite.
+     */
     public void changeColor() {
         this.color = Colors.getOpposite(this.color);
         this.left.color = Colors.getOpposite(this.left.color);
@@ -217,32 +368,50 @@ class Node<T> {
     }
 }
 
+/**
+ * RedBlackTree class.
+ *
+ * @param <T> the parameter of type
+ */
 class RedBlackTree<T extends Comparable<T>> {
     private Node<T> root;
 
 
-    public void insert(T value) {
-        root = insert(root, value);
+    /**
+     * Puts value into this {@link RedBlackTree}.
+     *
+     * @param value the value
+     */
+    public void put(T value) {
+        root = put(root, value);
         root.color = Colors.BLACK;
     }
 
-    private Node<T> insert(Node<T> root, T value) {
+    /**
+     * Puts value into this {@link RedBlackTree}.
+     *
+     * @param root  root {@link Node} of subtree to put
+     * @param value the value
+     * @return {@link Node} that contains this value
+     */
+    private Node<T> put(Node<T> root, T value) {
         if (root == null) {
             return new Node<>(value);
         }
-        if (value.compareTo(root.value) < 0) {
-            root.left = insert(root.left, value);
-        }
 
         if (value.compareTo(root.value) > 0) {
-            root.right = insert(root.right, value);
+            root.right = put(root.right, value);
+        }
+
+        if (value.compareTo(root.value) < 0) {
+            root.left = put(root.left, value);
         }
 
         if (value.compareTo(root.value) == 0) {
             root.value = value;
         }
 
-        if (isRed(root.right) && isBlack(root.left)) {
+        if (isRed(root.right) && isBlackOrNull(root.left)) {
             root = leftRotation(root);
         }
         if (isRed(root.left) && isRed(root.left.left)) {
@@ -255,6 +424,12 @@ class RedBlackTree<T extends Comparable<T>> {
         return root;
     }
 
+    /**
+     * Checks if this {@link Node} is Red.
+     *
+     * @param node {@link Node} to check.
+     * @return {@code true} if {@link Node} is Red, otherwise {@code false}
+     */
     private boolean isRed(Node<T> node) {
         if (node == null) {
             return false;
@@ -262,12 +437,26 @@ class RedBlackTree<T extends Comparable<T>> {
         return node.color == Colors.RED;
     }
 
-    private boolean isBlack(Node<T> node) {
+    /**
+     * Checks if this {@link Node} is Black or Null.
+     *
+     * @param node {@link Node} to check.
+     * @return {@code true} if {@link Node} is Black or Null, otherwise {@code false}
+     */
+    private boolean isBlackOrNull(Node<T> node) {
         return !isRed(node);
     }
 
-
+    /**
+     * Converts a left-leaning link to a right-leaning link
+     *
+     * @param root root {@link Node} of subtree to rotate
+     * @return new root {@link Node}
+     */
     private Node<T> leftRotation(Node<T> root) {
+        if (root == null) {
+            return null;
+        }
         Node<T> node = root.right;
         root.right = node.left;
 
@@ -277,7 +466,16 @@ class RedBlackTree<T extends Comparable<T>> {
         return node;
     }
 
+    /**
+     * Converts a right-leaning link to a left-leaning link
+     *
+     * @param root root {@link Node} of subtree to rotate
+     * @return new root {@link Node}
+     */
     private Node<T> rightRotation(Node<T> root) {
+        if (root == null) {
+            return null;
+        }
         Node<T> node = root.left;
         root.left = node.right;
 
@@ -288,6 +486,11 @@ class RedBlackTree<T extends Comparable<T>> {
     }
 
 
+    /**
+     * Deletes value from this {@link RedBlackTree}.
+     *
+     * @param value value to delete
+     */
     public void delete(T value) {
         if (root == null) {
             return;
@@ -299,15 +502,25 @@ class RedBlackTree<T extends Comparable<T>> {
         }
     }
 
+    /**
+     * Deletes value from this {@link RedBlackTree}.
+     *
+     * @param root  root {@link Node} of subtree where {@link Node} will be deleted
+     * @param value value to delete
+     * @return new root {@link Node}
+     */
     private Node<T> deleteNode(Node<T> root, T value) {
+        if (root == null) {
+            return null;
+        }
         if (value.compareTo(root.value) < 0) {
             if (root.left != null) {
-                if (isBlack(root.left) && isBlack(root.left.left)) {
+                if (isBlackOrNull(root.left) && isBlackOrNull(root.left.left)) {
                     root = moveRedLeft(root);
                 }
                 root.left = deleteNode(root.left, value);
             }
-            return fixUp(root);
+            return rebalance(root);
         }
 
         if (isRed(root.left)) {
@@ -318,11 +531,11 @@ class RedBlackTree<T extends Comparable<T>> {
         }
 
         if (root.right != null) {
-            if (isBlack(root.right) && isBlack(root.right.left)) {
+            if (isBlackOrNull(root.right) && isBlackOrNull(root.right.left)) {
                 root = moveRedRight(root);
             }
             if (value.compareTo(root.value) == 0) {
-                Node<T> minRBNode = findMinimum(root.right);
+                Node<T> minRBNode = getMinimum(root.right);
                 root.value = minRBNode.value;
                 root.right = deleteMinimum(root.right);
             } else {
@@ -330,28 +543,50 @@ class RedBlackTree<T extends Comparable<T>> {
             }
         }
 
-        return fixUp(root);
+        return rebalance(root);
     }
 
-    private Node<T> findMinimum(Node<T> node) {
+    /**
+     * Gets minimum value from this {@link RedBlackTree}
+     *
+     * @param node root {@link Node} of subtree where to search minimum value
+     * @return {@link Node} with minimum value
+     */
+    private Node<T> getMinimum(Node<T> node) {
         while (node.left != null) {
             node = node.left;
         }
         return node;
     }
 
+    /**
+     * Deletes minimum value from this {@link RedBlackTree}
+     *
+     * @param node root {@link Node} of subtree where to search minimum value
+     * @return new root {@link Node}
+     */
     private Node<T> deleteMinimum(Node<T> node) {
-        if (node.left == null) {
+        if (node == null || node.left == null) {
             return null;
         }
-        if (isBlack(node.left) && isBlack(node.left.left)) {
+        if (isBlackOrNull(node.left) && isBlackOrNull(node.left.left)) {
             node = moveRedLeft(node);
         }
         node.left = deleteMinimum(node.left);
-        return fixUp(node);
+        return rebalance(node);
     }
 
+    /**
+     * Make node.left or one of its children Red
+     * in the case that {@link Node} is Red and node.left and node.left.left are both Black.
+     *
+     * @param node {@link Node} to change
+     * @return changed node
+     */
     private Node<T> moveRedLeft(Node<T> node) {
+        if (node == null) {
+            return null;
+        }
         node.changeColor();
         if (isRed(node.right.left)) {
             node.right = rightRotation(node.right);
@@ -361,7 +596,17 @@ class RedBlackTree<T extends Comparable<T>> {
         return node;
     }
 
+    /**
+     * Make node.right or one of its children Red
+     * in the case that {@link Node} is Red and both node.right and node.right.left are both Black.
+     *
+     * @param node {@link Node} to change
+     * @return changed node
+     */
     private Node<T> moveRedRight(Node<T> node) {
+        if (node == null) {
+            return null;
+        }
         node.changeColor();
         if (isRed(node.left.left)) {
             node = rightRotation(node);
@@ -370,9 +615,16 @@ class RedBlackTree<T extends Comparable<T>> {
         return node;
     }
 
-
-    private Node<T> fixUp(Node<T> node) {
-        if (isRed(node.right)) {
+    /**
+     * Restores Red-Black tree invariant
+     * @param node root {@link Node}
+     * @return new root {@link Node}
+     */
+    private Node<T> rebalance(Node<T> node) {
+        if (node == null) {
+            return null;
+        }
+        if (isBlackOrNull(node.left) && isRed(node.right)) {
             node = leftRotation(node);
         }
         if (isRed(node.left) && isRed(node.left.left)) {
@@ -384,6 +636,12 @@ class RedBlackTree<T extends Comparable<T>> {
         return node;
     }
 
+    /**
+     * Gets predecessor.
+     *
+     * @param value the value
+     * @return the predecessor
+     */
     public T getPredecessor(T value) {
         Node<T> current = root;
         Node<T> predecessor = null;
@@ -399,6 +657,12 @@ class RedBlackTree<T extends Comparable<T>> {
         return predecessor == null ? null : predecessor.value;
     }
 
+    /**
+     * Gets successor.
+     *
+     * @param value the value
+     * @return the successor
+     */
     public T getSuccessor(T value) {
         Node<T> current = root;
         Node<T> successor = null;
