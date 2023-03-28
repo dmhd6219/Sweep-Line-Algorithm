@@ -379,6 +379,7 @@ class RedBlackTree<T extends Comparable<T>> {
 
     /**
      * Puts value into this {@link RedBlackTree}.
+     * Time complexity (worst case) - O(log n).
      *
      * @param value the value
      */
@@ -488,6 +489,7 @@ class RedBlackTree<T extends Comparable<T>> {
 
     /**
      * Deletes value from this {@link RedBlackTree}.
+     * Time complexity (worst case) - O(log n).
      *
      * @param value value to delete
      */
@@ -548,6 +550,8 @@ class RedBlackTree<T extends Comparable<T>> {
 
     /**
      * Gets minimum value from this {@link RedBlackTree}
+     * <p>
+     * Time complexity (worst case) - O(log n).
      *
      * @param node root {@link Node} of subtree where to search minimum value
      * @return {@link Node} with minimum value
@@ -617,6 +621,7 @@ class RedBlackTree<T extends Comparable<T>> {
 
     /**
      * Restores Red-Black tree invariant
+     *
      * @param node root {@link Node}
      * @return new root {@link Node}
      */
@@ -638,6 +643,7 @@ class RedBlackTree<T extends Comparable<T>> {
 
     /**
      * Gets predecessor.
+     * Time complexity (worst case) - O(log n).
      *
      * @param value the value
      * @return the predecessor
@@ -659,6 +665,7 @@ class RedBlackTree<T extends Comparable<T>> {
 
     /**
      * Gets successor.
+     * Time complexity (worst case) - O(log n).
      *
      * @param value the value
      * @return the successor
@@ -682,3 +689,38 @@ class RedBlackTree<T extends Comparable<T>> {
         return successor == null ? null : successor.value;
     }
 }
+
+/*
+Task 2.1.2
+    It's true that several industries, including computer graphics, robotics, geographic information systems,
+    and computer vision, face the challenge of detecting the intersection of two line segments.
+    Here are some additional applications of line segment intersection:
+
+        1) For the purpose of detecting collisions between objects in a scene, line segment intersection is used in
+        computer games and simulations. It is possible to tell if two things are in contact or if they are colliding by
+        examining whether the line segments that represent the two objects intersect.
+
+        2) It is used in pattern identification in computer vision and image processing.
+        It is feasible to utilize line segment intersection algorithms to find characteristics like corners,
+        intersections, and areas with similar patterns by modeling edges and contours as line segments.
+
+        3) In additive manufacturing, 3D models are divided into layers that may be printed one at a time using line
+        segment intersection. Line segment intersection algorithms can be used to split a 3D model into layers and
+        produce the toolpaths needed by the 3D printer to construct the actual object by describing the model's
+        surfaces as line segments.
+
+Task 2.1.3
+    It involves grouping the line segments according to their x-coordinate and processing each one in sequence.
+    As each line segment is taken into account, a vertical line known as the sweep line sweeps across the plane.
+    The method keeps track of the line segments that cross the sweep line in a data structure.
+
+    The algorithm adds new line segments to the data structure as the sweep line crosses the plane and deletes old line
+    segments that are no longer intersecting the sweep line. The technique checks for intersection with a segment's
+    neighbors in the data structure whenever a new segment is added. The algorithm announces the discovery of an
+    intersection as a solution to the issue.
+
+Task 2.1.4
+    * Worst O(n^2), average O(nlog(n))
+    * In-place
+    * No, it is not stable
+ */
