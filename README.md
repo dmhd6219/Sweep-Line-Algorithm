@@ -1,6 +1,7 @@
 # Sweep Line Algorithm
 Was created as homework for Data Structures and Algorythms course at Innopolis University.
 
+## Description
 Implement Sweep line algorithm using the sorting algorithm and self-balanced binary search tree you implemented in other parts of this homework. Write a program that given a collection of line segments detects if any two intersect.
 
 **Input format.** First line of the input contains a number *N* (*0* < *N* < *10^6*). Each of the next *N* lines contains a description of a segment *PQ*, consisting of 4 coordinates separated by spaces: *xP yP xQ yQ*. Coordinates are all integers (*−2^21* ≤ *x*, *y* ≤ *2^21*).
